@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taco Express - Comida a Domicilio</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- ======= HEADER ======= -->
+    <header>
+        <nav>
+            <div class="logo">🌮 Taco Express</div>
+            <ul class="nav-links">
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#menu">Menú</a></li>
+                <li><a href="#conocenos">Conócenos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- ======= HERO ======= -->
+    <section class="hero" id="inicio">
+        <div class="hero-content">
+            <h1>Comida Mexicana Caliente y Rápida</h1>
+            <p>Ordena tus tacos favoritos y recíbelos en menos de 30 minutos.</p>
+            <button class="btn" onclick="document.getElementById('menu').scrollIntoView({behavior: 'smooth'})">
+                Ver Menú
+            </button>
+        </div>
+    </section>
+
+    <!-- ======= MENÚ ======= -->
+    <section class="menu-section" id="menu">
+        <h2 class="section-title">Nuestro Menú</h2>
+        <div class="menu-grid">
+            <div class="menu-card">
+                <div class="menu-card-img">🌮</div>
+                <div class="menu-card-content">
+                    <h3>Tacos al Pastor</h3>
+                    <p>Clásicos tacos con piña y carne marinada.</p>
+                    <div class="price">$25</div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div class="menu-card-img">🌯</div>
+                <div class="menu-card-content">
+                    <h3>Burrito Especial</h3>
+                    <p>Relleno de carne, frijoles, arroz y queso.</p>
+                    <div class="price">$70</div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div class="menu-card-img">🥤</div>
+                <div class="menu-card-content">
+                    <h3>Agua de Horchata</h3>
+                    <p>Bebida refrescante y tradicional mexicana.</p>
+                    <div class="price">$20</div>
+                </div>
+            </div>
+
+            <div class="menu-card">
+                <div class="menu-card-img">🍽️</div>
+                <div class="menu-card-content">
+                    <h3>Combo Express</h3>
+                    <p>3 tacos al pastor + agua a elección.</p>
+                    <div class="price">$60</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ======= CONÓCENOS ======= -->
+    <section id="conocenos" class="about-section">
+        <h2 class="section-title">Conócenos</h2>
+        <div class="about-container">
+            <div class="about-text">
+                <h3>Quiénes Somos</h3>
+                <p><strong>Taco Express</strong> es un servicio de comida rápida y eficiente que conecta los mejores sabores mexicanos con la comodidad de tu hogar. Nuestra meta es ofrecer calidad, rapidez y confianza en cada entrega.</p>
+
+                <h3>Misión</h3>
+                <p>Ofrecer un servicio de entrega de comida rápida, eficiente, seguro y accesible, apoyado en una plataforma digital intuitiva y un equipo altamente comprometido.</p>
+
+                <h3>Visión</h3>
+                <p>Ser el sistema de entrega de comida líder en la región, reconocido por su rapidez, confiabilidad y tecnología innovadora, garantizando que cada cliente reciba su pedido caliente, físico y en el menor tiempo posible, contribuyendo así a una experiencia gastronómica práctica y satisfactoria.</p>
+            </div>
+
+            <div class="about-image">
+                <img src="img/organigrama.pgn" alt="Organigrama Taco Express">
+                <p><em>Organigrama General de Taco Express</em></p>
+            </div>
+        </div>
+
+        <h3>Funciones del Organigrama</h3>
+        <div class="roles">
+            <p>🎯 <strong>Dirección General:</strong> Define la visión y misión de la empresa. Supervisa las áreas clave y representa a Taco Express ante aliados y clientes.</p>
+
+            <p>📊 <strong>Área de Administración:</strong><br>
+            <strong>Contador:</strong> Controla ingresos, egresos y nóminas.<br>
+            <strong>Recursos Humanos:</strong> Recluta y capacita al personal, y gestiona contratos y beneficios.</p>
+
+            <p>💼 <strong>Área de Ventas:</strong> Diseña campañas, gestiona alianzas con restaurantes y supervisa promociones y descuentos.</p>
+
+            <p>🚚 <strong>Logística y Repartos:</strong><br>
+            <strong>Coordinador de Repartos:</strong> Asigna pedidos y optimiza rutas.<br>
+            <strong>Repartidores:</strong> Entregan los pedidos de forma segura.<br>
+            <strong>Jefe de Logística:</strong> Atiende reclamos y mide la satisfacción del cliente.</p>
+
+            <p>💻 <strong>Área Tecnológica:</strong><br>
+            <strong>Equipo de Desarrollo Web:</strong> Diseña y mantiene la web y la app móvil.<br>
+            <strong>Equipo de Mantenimiento:</strong> Garantiza el funcionamiento de servidores y seguridad de datos.</p>
+        </div>
+    </section>
+
+    <!-- ======= CONTACTO ======= -->
+    <footer id="contacto">
+        <h3>Taco Express</h3>
+        <p>📞 Teléfono: (771) 987-6543</p>
+        <p>📍 Tulancingo, Hidalgo</p>
+        <p>© 2025 Taco Express. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- ======= CHATBOT ======= -->
+    <div class="chatbot-button" onclick="toggleChat()">💬</div>
+
+    <div class="chatbot-container" id="chatbot">
+        <div class="chatbot-header">
+            <h3>Asistente TacoBot</h3>
+            <button class="close-chat" onclick="toggleChat()">×</button>
+        </div>
+        <div class="chatbot-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-content">
+                    ¡Hola! Soy TacoBot 🌮 ¿En qué puedo ayudarte?<br>
+                    Puedes preguntar por: menú, precios, horario o pedidos.
+                </div>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="userInput" placeholder="Escribe tu mensaje..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script src="js/chatbot.js"></script>
+</body>
+</html>
