@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taco Express - Comida a Domicilio</title>
     <link rel="stylesheet" href="css/style.css">
+    <!-- Gemini AI CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai/dist/gemini-api.browser.min.js"></script>
 </head>
 <body>
     <!-- ======= HEADER ======= -->
@@ -89,7 +91,7 @@
             </div>
 
             <div class="about-image">
-                <img src="img/organigrama.pgn" alt="Organigrama Taco Express">
+                <img src="img/organigrama.png" alt="Organigrama Taco Express">
                 <p><em>Organigrama General de Taco Express</em></p>
             </div>
         </div>
@@ -145,6 +147,9 @@
         </div>
     </div>
 
+    <!-- Cargar configuración primero -->
+    <script src="config.js"></script>
+    <!-- Luego el chatbot -->
     <script src="js/chatbot.js"></script>
 </body>
 </html>
