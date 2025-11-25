@@ -1,110 +1,209 @@
-// === Chatbot avanzado Taco Express ===
-let estado = null; // Guardará el contexto de conversación (ej: "menu", "pedido", etc.)
+// === Chatbot con Gemini IA ===
+class TacoBot {
+    constructor() {
+        this.historial = [];
+        this.modelo = null;
+        this.inicializarModelo();
+    }
+
+    async inicializarModelo() {
+        try {
+            if (typeof GEMINI_API_KEY === 'undefined' || !GEMINI_API_KEY) {
+                console.warn('API Key no configurada - Usando modo fallback');
+                return;
+            }
+
+            const genAI = new googleGenerativeAI(GEMINI_API_KEY);
+            this.modelo = genAI.getGenerativeModel({ 
+                model: "gemini-pro",
+                generationConfig: {
+                    maxOutputTokens: 500,
+                    temperature: 0.7,
+                }
+            });
+            console.log('✅ Gemini IA inicializado');
+        } catch (error) {
+            console.error('❌ Error inicializando Gemini:', error);
+        }
+    }
+
+    async sendMessage(mensajeUsuario) {
+        this.addMessage(mensajeUsuario, 'user');
+        const typingIndicator = this.addTypingIndicator();
+
+        try {
+            let respuesta;
+            if (this.modelo) {
+                respuesta = await this.getGeminiResponse(mensajeUsuario);
+            } else {
+                respuesta = this.getFallbackResponse(mensajeUsuario);
+            }
+            
+            this.removeTypingIndicator(typingIndicator);
+            this.addMessage(respuesta, 'bot');
+        } catch (error) {
+            this.removeTypingIndicator(typingIndicator);
+            console.error('Error:', error);
+            const fallback = this.getFallbackResponse(mensajeUsuario);
+            this.addMessage(fallback, 'bot');
+        }
+    }
+
+    async getGeminiResponse(mensajeUsuario) {
+        const prompt = `
+Eres TacoBot, el asistente virtual de "Taco Express" restaurante mexicano.
+
+INFORMACIÓN REAL DE TACO EXPRESS:
+• MENÚ: Tacos al Pastor ($25), Burrito Especial ($70), Agua de Horchata ($20), Combo Express ($60 - 3 tacos + bebida)
+• HORARIO: 9:00 a.m. a 10:00 p.m. todos los días
+• UBICACIÓN: Calle del Sabor #123, Tulancingo, Hidalgo
+• TELÉFONO: (771) 987-6543
+• SERVICIO: Entrega a domicilio en menos de 30 minutos
+
+REGLAS:
+1. Responde SOLO sobre Taco Express
+2. Sé breve, amigable y en español
+3. Usa emojis relevantes (🌮, 🚚, 📍, 🕙, 💰)
+4. NO inventes información
+5. Si no sabes algo, sugiere llamar al teléfono
+
+HISTORIAL:
+${this.historial.slice(-4).map(msg => `${msg.role}: ${msg.content}`).join('\n')}
+
+USUARIO: ${mensajeUsuario}
+
+TACOBOT:`;
+
+        try {
+            const result = await this.modelo.generateContent(prompt);
+            const response = await result.response;
+            let texto = response.text();
+
+            // Limpiar respuesta
+            texto = texto
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+                .replace(/\*(.*?)\*/g, '<b>$1</b>')
+                .trim();
+
+            // Actualizar historial
+            this.historial.push({ role: 'user', content: mensajeUsuario });
+            this.historial.push({ role: 'assistant', content: texto });
+            
+            if (this.historial.length > 6) {
+                this.historial = this.historial.slice(-6);
+            }
+
+            return texto;
+        } catch (error) {
+            console.error('Error con Gemini:', error);
+            throw error;
+        }
+    }
+
+    getFallbackResponse(msg) {
+        const lowerMsg = msg.toLowerCase();
+        
+        if (lowerMsg.includes('hola') || lowerMsg.includes('buenas')) {
+            return "¡Hola! 😊 Soy TacoBot 🌮<br>Puedo ayudarte con: <b>menú</b>, <b>precios</b>, <b>horario</b> o <b>ubicación</b>.";
+        }
+
+        if (lowerMsg.includes('menú') || lowerMsg.includes('menu')) {
+            return "🌮 <b>Nuestro Menú</b> 🌮<br>" +
+                   "• Tacos al Pastor - $25 c/u<br>" +
+                   "• Burrito Especial - $70<br>" +
+                   "• Agua de Horchata - $20<br>" +
+                   "• Combo Express (3 tacos + bebida) - $60";
+        }
+
+        if (lowerMsg.includes('precio') || lowerMsg.includes('cuánto') || lowerMsg.includes('cuesta')) {
+            return "💰 <b>Precios</b><br>" +
+                   "Desde $20 hasta $70. El <b>Combo Express</b> cuesta $60.";
+        }
+
+        if (lowerMsg.includes('horario') || lowerMsg.includes('hora')) {
+            return "🕙 <b>Horario</b><br>" +
+                   "Abrimos de <b>9:00 a.m. a 10:00 p.m.</b> todos los días";
+        }
+
+        if (lowerMsg.includes('dirección') || lowerMsg.includes('ubicación') || lowerMsg.includes('dónde')) {
+            return "📍 <b>Ubicación</b><br>" +
+                   "Calle del Sabor #123, Tulancingo, Hidalgo<br>" +
+                   "📞 Tel: (771) 987-6543";
+        }
+
+        if (lowerMsg.includes('pedido') || lowerMsg.includes('ordenar')) {
+            return "🚚 <b>¡Excelente!</b><br>" +
+                   "Puedes llamarnos al <b>(771) 987-6543</b> para hacer tu pedido.";
+        }
+
+        if (lowerMsg.includes('gracias')) {
+            return "¡De nada! 😊<br>Es un placer ayudarte. ¡Esperamos verte pronto! 🌮";
+        }
+
+        return "🤔 No estoy seguro de entender.<br>" +
+               "Puedo ayudarte con: <b>menú</b>, <b>precios</b>, <b>horario</b>, <b>ubicación</b> o <b>pedidos</b>.";
+    }
+
+    addMessage(text, sender) {
+        const container = document.getElementById("chatMessages");
+        const msgDiv = document.createElement("div");
+        msgDiv.className = `message ${sender}`;
+        
+        const textoFormateado = text.replace(/\n/g, '<br>');
+        msgDiv.innerHTML = `<div class="message-content">${textoFormateado}</div>`;
+        
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    addTypingIndicator() {
+        const container = document.getElementById("chatMessages");
+        const typingDiv = document.createElement("div");
+        typingDiv.className = "message bot typing";
+        typingDiv.innerHTML = `<div class="message-content">TacoBot está escribiendo...</div>`;
+        container.appendChild(typingDiv);
+        container.scrollTop = container.scrollHeight;
+        return typingDiv;
+    }
+
+    removeTypingIndicator(typingElement) {
+        if (typingElement && typingElement.parentNode) {
+            typingElement.parentNode.removeChild(typingElement);
+        }
+    }
+}
+
+// ====== FUNCIONES GLOBALES ======
+let tacoBot = new TacoBot();
 
 function toggleChat() {
-    document.getElementById("chatbot").classList.toggle("active");
+    const chatbot = document.getElementById("chatbot");
+    chatbot.classList.toggle("active");
+    
+    if (chatbot.classList.contains("active")) {
+        setTimeout(() => {
+            document.getElementById("userInput").focus();
+        }, 300);
+    }
 }
 
 function handleKeyPress(e) {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter") {
+        sendMessage();
+    }
 }
 
 function sendMessage() {
     const input = document.getElementById("userInput");
     const mensaje = input.value.trim();
+    
     if (!mensaje) return;
 
-    addMessage(mensaje, "user");
     input.value = "";
-
-    setTimeout(() => {
-        const respuesta = getBotResponse(mensaje.toLowerCase());
-        addMessage(respuesta, "bot");
-    }, 700);
+    tacoBot.sendMessage(mensaje);
 }
 
-function addMessage(text, sender) {
-    const container = document.getElementById("chatMessages");
-    const msgDiv = document.createElement("div");
-    msgDiv.className = `message ${sender}`;
-    msgDiv.innerHTML = `<div class="message-content">${text}</div>`;
-    container.appendChild(msgDiv);
-    container.scrollTop = container.scrollHeight;
-}
-
-function getBotResponse(msg) {
-    // --- SALUDO GENERAL ---
-    if (msg.includes("hola") || msg.includes("buenas")) {
-        estado = null;
-        return "¡Hola! 😊 Soy TacoBot 🌮, tu asistente de Taco Express.<br>¿Quieres conocer nuestro <b>menú</b>, <b>precios</b> o hacer un <b>pedido</b>?";
-    }
-
-    // --- MENÚ COMPLETO ---
-    if (msg.includes("menú") || msg.includes("menu")) {
-        estado = "menu";
-        return "Tenemos una gran variedad:<br>🌮 <b>Tacos al Pastor</b> – $25 c/u<br>🌯 <b>Burrito Especial</b> – $70<br>🥤 <b>Agua de Horchata</b> – $20<br>🍽️ <b>Combo Express</b> (3 tacos + bebida) – $60<br><br>¿Quieres saber más sobre algún platillo?";
-    }
-
-    // --- DETALLE DE PRODUCTO ---
-    if (msg.includes("taco")) {
-        estado = "menu";
-        return "Nuestros <b>Tacos al Pastor</b> están hechos con carne marinada, piña, cebolla y cilantro 🌮.<br>Son los favoritos de nuestros clientes 😋.<br>¿Deseas conocer los combos disponibles?";
-    }
-    if (msg.includes("burrito")) {
-        estado = "menu";
-        return "El <b>Burrito Especial</b> está relleno de carne asada, frijoles, arroz y queso fundido 🌯.<br>Perfecto para una comida completa.";
-    }
-    if (msg.includes("combo")) {
-        estado = "menu";
-        return "El <b>Combo Express</b> incluye 3 tacos al pastor y una bebida por solo $60 MXN 🍽️.<br>¿Te gustaría hacer un pedido simulado?";
-    }
-
-    // --- PEDIDOS SIMULADOS ---
-    if (msg.includes("pedido") || msg.includes("ordenar")) {
-        estado = "pedido";
-        return "¡Perfecto! 🚴‍♂️ ¿Qué te gustaría pedir?<br>Ejemplo: <em>3 tacos y 1 agua</em>";
-    }
-
-    if (estado === "pedido") {
-        if (msg.includes("taco") || msg.includes("burrito") || msg.includes("combo") || msg.includes("agua")) {
-            estado = "confirmar";
-            return "Excelente elección 😋<br>¿Deseas que te lo entreguemos en casa o pasarás a recogerlo?";
-        }
-    }
-
-    if (estado === "confirmar") {
-        if (msg.includes("entrega") || msg.includes("domicilio")) {
-            estado = null;
-            return "Perfecto 🏠. Tu pedido está registrado. En un futuro, esta función permitirá delivery real.<br>Gracias por confiar en <b>Taco Express</b> 🌮";
-        }
-        if (msg.includes("recoger") || msg.includes("local")) {
-            estado = null;
-            return "¡Excelente! 😄 Te esperamos en Calle del Sabor #123, Tulancingo.<br>Tu pedido estará listo en 10 minutos ⏰.";
-        }
-    }
-
-    // --- INFORMACIÓN GENERAL ---
-    if (msg.includes("precio") || msg.includes("cuánto")) {
-        return "Nuestros precios van desde $20 (bebidas) hasta $70 (burritos grandes) 💰.<br>El <b>Combo Express</b> cuesta $60 e incluye tacos + bebida.";
-    }
-
-    if (msg.includes("horario")) {
-        return "Abrimos todos los días de <b>9:00 a.m. a 10:00 p.m.</b> 🕙.";
-    }
-
-    if (msg.includes("dirección") || msg.includes("ubicación")) {
-        return "Nos encontramos en <b>Calle del Sabor #123, Tulancingo, Hidalgo</b> 📍.";
-    }
-
-    if (msg.includes("gracias")) {
-        return "¡Con gusto! 😊 Esperamos verte pronto en Taco Express 🌮.";
-    }
-
-    if (msg.includes("adiós") || msg.includes("bye")) {
-        estado = null;
-        return "¡Hasta pronto! 👋 Que tengas un excelente día lleno de sabor 🌮🔥.";
-    }
-
-    // --- RESPUESTA POR DEFECTO ---
-    return "No entendí muy bien 🤔.<br>Puedes preguntarme por nuestro <b>menú</b>, <b>precios</b>, <b>horario</b> o <b>hacer un pedido</b>.";
-}
+// Inicializar cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("🌮 TacoBot inicializado");
+});
